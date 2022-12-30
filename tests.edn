@@ -1,0 +1,6 @@
+#kaocha/v1
+ {:kaocha.plugin.capture-output/capture-output? false
+  :kaocha.watch/ignore ["*.tmp"]
+  :kaocha.plugin.randomize/randomize? true
+  :kaocha/reporter [kaocha.report/dots]
+  :plugins [:kaocha.plugin/cloverage]}

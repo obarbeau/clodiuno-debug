@@ -1,0 +1,15 @@
+;; Clojure API for Arduino with debug mode
+{:deps {cheshire/cheshire           {:mvn/version "5.11.0"}
+        com.taoensso/timbre         {:mvn/version "5.2.1"}
+        io.aviso/pretty             {:mvn/version "1.1.1"}
+        io.github.obarbeau/clodiuno {:git/sha "a667f5dfb6076273ded3d24d06ecdb7b3b668ba3"}
+        org.clojure/clojure         {:mvn/version "1.11.1"}}
+ :paths ["src" "resources"]
+ :aliases
+ {:build {:deps {io.github.obarbeau/build-clj
+                 {:git/sha "749524da3eb25b4cd42e21dcf037f8eba2301b5f"}}
+          :exec-args {:lib io.github.obarbeau/clodiuno
+                      :main-ns clodiuno.core
+                      :version "0.0.4-SNAPSHOT"}}
+  :test {:extra-paths ["test" "test-resources"]
+         :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.0.75"}}}}}
