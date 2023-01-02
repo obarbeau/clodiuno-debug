@@ -1,0 +1,36 @@
+{
+  "signal" : [ {
+    "name" : "PIN0",
+    "wave" : "x.....................",
+    "data" : [ ]
+  }, {
+    "name" : "PIN1",
+    "wave" : "x...........234567892.",
+    "data" : [ "42", "21", "23", "25", "27", "29", "31", "33", "35" ]
+  }, {
+    "name" : "CLK",
+    "wave" : "xhlpPl.nnN...........h",
+    "data" : [ ]
+  }, {
+    "name" : "IO",
+    "wave" : "x.....................",
+    "data" : [ ]
+  }, {
+    "name" : "CE/_RST",
+    "wave" : "x.....l...HL..........",
+    "data" : [ ]
+  } ],
+  "config" : {
+    "hscale" : 1,
+    "skin" : "default"
+  },
+  "head" : {
+    "text" : "WaveDrom example",
+    "tick" : 0,
+    "every" : 2
+  },
+  "foot" : {
+    "text" : "Figure 100",
+    "tock" : 9
+  }
+}
