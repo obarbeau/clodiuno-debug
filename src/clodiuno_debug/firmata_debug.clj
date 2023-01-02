@@ -31,6 +31,16 @@
    :cyan :black
    :magenta :white})
 
+;; TODO test this
+(defn display-all-ansi-colors []
+  (->> available-colors
+       (keys)
+       (map str)
+       (map #(format "(str ansi/%s-font \"normal %s\" ansi/bold-%s-font \"  bold %s\" ansi/reset-font)" % % % %))
+       (map #(eval (read-string %)))
+       (clojure.string/join "\n")
+       (println)))
+
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defprotocol IOutputStream
   (getOutputStream [this]
