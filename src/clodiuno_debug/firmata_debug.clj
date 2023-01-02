@@ -171,7 +171,7 @@
                           [i (repeat 8 nil)]))
         :signal (init-signal pin-mapping)
         ;; used to cycle colors in wavedrom
-        :analog-write-count 0}))
+        :write-colors (-> (range 2 10) (cycle))}))
 
 (defmethod ccore/close :firmata-debug [board]
   (when-let [os (:output-stream @board)]
@@ -240,20 +240,20 @@
 
 (defmethod ccore/analog-write :firmata-debug [board pin val]
   (let [{:keys [name mode] :as pin-info} (pin-info board pin)
-        analog-write-count (:analog-write-count @board)]
+        [write-color & write-colors] (:write-colors @board)]
     (assert (= PWM mode) (format "Pin %d (%s) is not in PWM mode." pin name))
     (assert (<= 0 val 255)
             (format "PWM value should be between 0 and 255: %d" val))
 
     (update-wave board
                  #(if (= % pin)
-                    (->> (range 2 10) (cycle) (drop analog-write-count) (first))
+                    write-color
                     ".")
                  :fn-data (fn [data p]
                             (if (= p pin)
                               (conj data (str val))
                               data)))
-    (assoc-in! board [:analog-write-count] (inc analog-write-count))
+    (assoc-in! board [:write-colors] write-colors)
     (pin-action board pin-info "analog write" val)))
 
 (defn- change-pin-state [board type pin enabled?]
