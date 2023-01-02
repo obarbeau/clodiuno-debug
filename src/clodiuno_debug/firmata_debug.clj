@@ -9,6 +9,13 @@
             [io.aviso.ansi :as ansi]
             [taoensso.timbre :as log]))
 
+(def HIGH_ARROW 5)
+(def LOW_ARROW 6)
+(def PCLK 7)
+(def PCLK_ARROW 8)
+(def NCLK 9)
+(def NCLK_ARROW 10)
+
 (def REPORT-ANALOG "enable analog input by pin #"  0xC0)
 (def REPORT-DIGITAL "enable digital input by port" 0xD0)
 (def arduino-port-count "eight pins per port" 7)
@@ -104,7 +111,7 @@
   [pin-mapping]
   (->> pin-mapping
        (map #(dissoc % :color))
-       (map #(assoc % :wave "z" :data []))))
+       (map #(assoc % :wave "x" :data []))))
 
 (defn pins
   "Returns a map of all pins indexed by their num:
@@ -125,10 +132,10 @@
    {:num 0 :color :black :name \"PIN0\" :port 0 :mode 'INPUT
     :pin-modes-on-port '(INPUT PWM nil nil nil nil nil nil)}
    ```"
-  [conn pin]
-  (let [full-pin (-> (:pin-mapping @conn) pins (get pin))
+  [board pin]
+  (let [full-pin (-> (:pin-mapping @board) pins (get pin))
         port (int (/ pin 8))
-        pin-modes-on-port (get (@conn :pin-mode) port)
+        pin-modes-on-port (get (@board :pin-mode) port)
         mode (->> pin-modes-on-port (drop (mod pin 8)) first)]
     (assert full-pin (format "Pin %d has not been mapped." pin))
     (merge {:mode mode :pin-modes-on-port pin-modes-on-port :port port}
@@ -162,7 +169,9 @@
         :pin-mode (into {}
                         (for [i (range 0 arduino-port-count)]
                           [i (repeat 8 nil)]))
-        :signal (init-signal pin-mapping)}))
+        :signal (init-signal pin-mapping)
+        ;; used to cycle colors in wavedrom
+        :analog-write-count 0}))
 
 (defmethod ccore/close :firmata-debug [board]
   (when-let [os (:output-stream @board)]
@@ -178,28 +187,29 @@
 ;; Change the :digital-out of the board for this pin.
 ;; Update the wave
 (defmethod ccore/digital-write :firmata-debug [board pin value]
-  (assert (contains? #{HIGH LOW} value)
+  (assert (contains? #{HIGH HIGH_ARROW LOW LOW_ARROW PCLK PCLK_ARROW NCLK NCLK_ARROW} value)
           "Incorrect value to write on digital pin.")
   (let [{:keys [name mode port] :as pin-info} (pin-info board pin)
         digital-out-port (get-in @board [:digital-out port])
         beg (take (mod pin 8) digital-out-port)
         end (drop (inc (mod pin 8)) digital-out-port)
         state (concat beg [value] end)
-        _ (println digital-out-port)
         current-value (nth digital-out-port (mod (inc pin) 8))
-        high? (= HIGH value)]
-    (println "current-value" pin current-value)
+        value-str (get {HIGH "h" LOW "l"
+                        HIGH_ARROW "H" LOW_ARROW "L"
+                        PCLK "p" PCLK_ARROW "P"
+                        NCLK "n" NCLK_ARROW "N"} value)]
     (assert (= OUTPUT mode)
             (format "Pin %d (%s) is not in OUTPUT mode." pin name))
     (assoc-in! board [:digital-out port] state)
     (update-wave board #(if (= % pin)
-                          (if high? "h" "l")
+                          value-str
                           "."))
     (pin-action
      board
      pin-info
      "digital-write"
-     (if high?
+     (if (#{HIGH HIGH_ARROW PCLK PCLK_ARROW} value)
        (ansi/green-bg " HIGH ")
        (ansi/black-bg " LOW ")))))
 
@@ -229,18 +239,21 @@
     (pin-action board pin-info "analog read" value)))
 
 (defmethod ccore/analog-write :firmata-debug [board pin val]
-  (let [{:keys [name mode] :as pin-info} (pin-info board pin)]
+  (let [{:keys [name mode] :as pin-info} (pin-info board pin)
+        analog-write-count (:analog-write-count @board)]
     (assert (= PWM mode) (format "Pin %d (%s) is not in PWM mode." pin name))
     (assert (<= 0 val 255)
             (format "PWM value should be between 0 and 255: %d" val))
+
     (update-wave board
                  #(if (= % pin)
-                    "="
+                    (->> (range 2 10) (cycle) (drop analog-write-count) (first))
                     ".")
                  :fn-data (fn [data p]
                             (if (= p pin)
                               (conj data (str val))
                               data)))
+    (assoc-in! board [:analog-write-count] (inc analog-write-count))
     (pin-action board pin-info "analog write" val)))
 
 (defn- change-pin-state [board type pin enabled?]

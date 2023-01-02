@@ -104,11 +104,11 @@
              (catch-all (core/digital-write board CE HIGH))))
       (is (= {:ex-msg "Assert failed: Incorrect value to write on digital pin."}
              (catch-all (core/digital-write board CLK 2))))
-      (is (= [{:data [], :name "PIN0", :num 0, :wave "z"}
-              {:data [], :name "PIN1", :num 1, :wave "z"}
-              {:data [], :name "CLK", :num 38, :wave "z"}
-              {:data [], :name "IO", :num 39, :wave "z"}
-              {:data [], :name "CE/_RST", :num 40, :wave "z"}]
+      (is (= [{:data [], :name "PIN0", :num 0, :wave "x"}
+              {:data [], :name "PIN1", :num 1, :wave "x"}
+              {:data [], :name "CLK", :num 38, :wave "x"}
+              {:data [], :name "IO", :num 39, :wave "x"}
+              {:data [], :name "CE/_RST", :num 40, :wave "x"}]
              (:signal @board)))
       (is (= "| [47m[30m38[m[m | CLK | digital-write | [42m HIGH [m |\n"
              (core/digital-write board CLK HIGH)))
@@ -120,11 +120,11 @@
               5 '(0 0 0 0 0 0 0 0)
               6 '(0 0 0 0 0 0 0 0)}
              (:digital-out @board)))
-      (is (= [{:data [], :name "PIN0", :num 0, :wave "z."}
-              {:data [], :name "PIN1", :num 1, :wave "z."}
-              {:data [], :name "CLK", :num 38, :wave "zh"}
-              {:data [], :name "IO", :num 39, :wave "z."}
-              {:data [], :name "CE/_RST", :num 40, :wave "z."}]
+      (is (= [{:data [], :name "PIN0", :num 0, :wave "x."}
+              {:data [], :name "PIN1", :num 1, :wave "x."}
+              {:data [], :name "CLK", :num 38, :wave "xh"}
+              {:data [], :name "IO", :num 39, :wave "x."}
+              {:data [], :name "CE/_RST", :num 40, :wave "x."}]
              (:signal @board)))
       (is (= "| [47m[30m38[m[m | CLK | digital-write | [40m LOW [m |\n"
              (core/digital-write board CLK LOW)))
@@ -136,11 +136,11 @@
               5 '(0 0 0 0 0 0 0 0)
               6 '(0 0 0 0 0 0 0 0)}
              (:digital-out @board)))
-      (is (= [{:data [], :name "PIN0", :num 0, :wave "z.."}
-              {:data [], :name "PIN1", :num 1, :wave "z.."}
-              {:data [], :name "CLK", :num 38, :wave "zhl"}
-              {:data [], :name "IO", :num 39, :wave "z.."}
-              {:data [], :name "CE/_RST", :num 40, :wave "z.."}]
+      (is (= [{:data [], :name "PIN0", :num 0, :wave "x.."}
+              {:data [], :name "PIN1", :num 1, :wave "x.."}
+              {:data [], :name "CLK", :num 38, :wave "xhl"}
+              {:data [], :name "IO", :num 39, :wave "x.."}
+              {:data [], :name "CE/_RST", :num 40, :wave "x.."}]
              (:signal @board))))
 
     (testing "analog-read"
@@ -176,14 +176,46 @@
              (catch-all (core/analog-write board PIN1 256))))
       (is (= "| [41m[37m01[m[m | PIN1 | analog write | 42 |\n"
              (core/analog-write board PIN1 42)))
-      (is (= [{:data [], :name "PIN0", :num 0, :wave "z..."}
-              {:data ["42"], :name "PIN1", :num 1, :wave "z..="}
-              {:data [], :name "CLK", :num 38, :wave "zhl."}
-              {:data [], :name "IO", :num 39, :wave "z..."}
-              {:data [], :name "CE/_RST", :num 40, :wave "z..."}]
+      (is (= [{:data [], :name "PIN0", :num 0, :wave "x..."}
+              {:data ["42"], :name "PIN1", :num 1, :wave "x..2"}
+              {:data [], :name "CLK", :num 38, :wave "xhl."}
+              {:data [], :name "IO", :num 39, :wave "x..."}
+              {:data [], :name "CE/_RST", :num 40, :wave "x..."}]
              (:signal @board))))
 
-    (testing "signal")
+    (testing "analog-write-color"
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 17 |\n"
+             (core/analog-write board PIN1 17)))
+      (is (= {:data ["42" "17"], :name "PIN1", :num 1, :wave "x..23"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 19 |\n"
+             (core/analog-write board PIN1 19)))
+      (is (= {:data ["42" "17" "19"], :name "PIN1", :num 1, :wave "x..234"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 21 |\n"
+             (core/analog-write board PIN1 21)))
+      (is (= {:data ["42" "17" "19" "21"], :name "PIN1", :num 1, :wave "x..2345"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 23 |\n"
+             (core/analog-write board PIN1 23)))
+      (is (= {:data ["42" "17" "19" "21" "23"], :name "PIN1", :num 1, :wave "x..23456"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 24 |\n"
+             (core/analog-write board PIN1 24)))
+      (is (= {:data ["42" "17" "19" "21" "23" "24"], :name "PIN1", :num 1, :wave "x..234567"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 27 |\n"
+             (core/analog-write board PIN1 27)))
+      (is (= {:data ["42" "17" "19" "21" "23" "24" "27"], :name "PIN1", :num 1, :wave "x..2345678"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 30 |\n"
+             (core/analog-write board PIN1 30)))
+      (is (= {:data ["42" "17" "19" "21" "23" "24" "27" "30"], :name "PIN1", :num 1, :wave "x..23456789"}
+             (-> @board :signal second)))
+      (is (= "| [41m[37m01[m[m | PIN1 | analog write | 32 |\n"
+             (core/analog-write board PIN1 32)))
+      (is (= {:data ["42" "17" "19" "21" "23" "24" "27" "30" "32"], :name "PIN1", :num 1, :wave "x..234567892"}
+             (-> @board :signal second))))
 
     (testing "enable-pin"
       (is (= {:ex-msg "Unknown pin type." :ex-data {}}
@@ -247,8 +279,6 @@
 
     (is (= (slurp "test-resources/all-test.md")
            (slurp (str "./output/" output-name ".md"))))
-
-    (is (true? (utils/export-signal board)))
 
     (is (nil? (core/close board)))
     ;;

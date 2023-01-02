@@ -1,8 +1,13 @@
 (ns clodiuno-debug.utils-test
-  (:require [clodiuno-debug.utils :as sut]
-            [clodiuno-debug.test-commons :refer [pin-mapping]]
+  (:require [clodiuno.core :as core
+             :refer [LOW HIGH INPUT OUTPUT ANALOG PWM SERVO]]
+            [clodiuno-debug.utils :as sut]
+            [clodiuno-debug.test-commons
+             :refer [pin-mapping PIN0 PIN1 IO CLK CE]]
             [clodiuno-debug.test-helpers :refer [catch-all with-logged-event-maps]]
-            [clojure.test :refer [deftest is]]))
+            [clojure.test :refer [deftest is]]
+            [clodiuno-debug.firmata-debug
+             :refer [HIGH_ARROW LOW_ARROW PCLK PCLK_ARROW NCLK NCLK_ARROW]]))
 
 (def pin-mapping3
   (conj pin-mapping
@@ -43,3 +48,31 @@
                               :output-filename nil)]
       (is (= [{:msg "No output file for this board in debug mode." :level :warn}]
              @logs)))))
+
+
+(deftest export-signal-test
+  (let [board (sut/connect pin-mapping :debug true :output-name "export-signal")]
+    (core/pin-mode board PIN0 INPUT)
+    (core/pin-mode board PIN1 PWM)
+    (core/pin-mode board CLK OUTPUT)
+    (core/pin-mode board IO ANALOG)
+    (core/pin-mode board CE OUTPUT)
+
+    (core/digital-read board PIN0)
+    (core/digital-write board CLK HIGH)
+    (core/digital-write board CLK LOW)
+    (core/digital-write board CLK PCLK)
+    (core/digital-write board CLK PCLK_ARROW)
+    (core/digital-write board CLK LOW)
+    (core/digital-write board CE LOW)
+    (core/digital-write board CLK NCLK)
+    (core/digital-write board CLK NCLK)
+    (core/digital-write board CLK NCLK_ARROW)
+    (core/digital-write board CE HIGH_ARROW)
+    (core/digital-write board CE LOW_ARROW)
+    (core/analog-read board IO)
+    (core/analog-write board PIN1 42)
+    (core/analog-write board PIN1 21)
+    (core/digital-write board CLK HIGH)
+
+    (is (true? (sut/export-signal board)))))

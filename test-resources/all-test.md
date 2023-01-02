@@ -10,6 +10,14 @@
 | [47m[30m38[m[m | CLK | digital-write | [40m LOW [m |
 | [43m[30m39[m[m | IO | analog read |  |
 | [41m[37m01[m[m | PIN1 | analog write | 42 |
+| [41m[37m01[m[m | PIN1 | analog write | 17 |
+| [41m[37m01[m[m | PIN1 | analog write | 19 |
+| [41m[37m01[m[m | PIN1 | analog write | 21 |
+| [41m[37m01[m[m | PIN1 | analog write | 23 |
+| [41m[37m01[m[m | PIN1 | analog write | 24 |
+| [41m[37m01[m[m | PIN1 | analog write | 27 |
+| [41m[37m01[m[m | PIN1 | analog write | 30 |
+| [41m[37m01[m[m | PIN1 | analog write | 32 |
 | [41m[37m01[m[m | PIN1 | enable | with code 193 1 |
 | [43m[30m39[m[m | IO | enable | with code 231 1 |
 | 40 | CE/_RST | enable | with code 232 1 |
