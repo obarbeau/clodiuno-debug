@@ -155,7 +155,31 @@
 ;; -------------------------------
 
 (defmethod ccore/arduino :firmata-debug
-  [type output-dir output-name pin-mapping]
+  [type
+   & {:keys [baudrate msg-callback port
+             output-dir output-name pin-mapping]
+      :or {baudrate 57600
+           output-dir "./output"
+           port "/dev/ttyACM0"}}]
+  (let [same-name (->> pin-mapping
+                       (map :name)
+                       (frequencies)
+                       (filter #(< 1 (val %))))
+        same-num (->> pin-mapping
+                      (map :num)
+                      (frequencies)
+                      (filter #(< 1 (val %))))]
+    (assert (empty? same-name)
+            (->> same-name
+                 (map first)
+                 (map #(format "The pin %s has been mapped several times" %))
+                 (str/join ". ")))
+    (assert (empty? same-num)
+            (->> same-num
+                 (map first)
+                 (map #(format "Pin number %02d has been mapped several times" %))
+                 (str/join ". "))))
+  ;; (log/infof "Debug mode. Connecting to Arduino on port %s" port)
   (ref {:interface type
         :output-dir output-dir
         :output-name output-name

@@ -19,7 +19,7 @@
 
 ;; tests
 (deftest all-test
-  (let [board (utils/connect pin-mapping :debug true :output-name output-name)]
+  (let [board (utils/connect :pin-mapping pin-mapping :debug true :output-name output-name)]
     (is (= :firmata-debug
            (:interface @board)))
 
@@ -285,7 +285,7 @@
     ))
 
 (deftest color-test
-  (let [board (utils/connect pin-mapping2
+  (let [board (utils/connect :pin-mapping pin-mapping2
                              :debug true
                              :output-name "color-test")]
     (doseq [pin-num (conj (range 0 6) 38 39 40)]
@@ -294,7 +294,7 @@
            (slurp "output/color-test.md")))))
 
 (deftest pin-and-pin-info-test
-  (let [board (utils/connect pin-mapping :debug true)]
+  (let [board (utils/connect :pin-mapping pin-mapping :debug true)]
     (is (= :firmata-debug
            (:interface @board)))
 

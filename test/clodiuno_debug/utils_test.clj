@@ -25,25 +25,25 @@
 
 (deftest two-pins-same-name-test
   (is (= {:ex-msg "Assert failed: The pin PIN0 has been mapped several times. The pin PIN1 has been mapped several times"}
-         (catch-all (sut/connect pin-mapping3
+         (catch-all (sut/connect :pin-mapping pin-mapping3
                                  :debug true
                                  :output-filename "output/nok-test.md")))))
 
 (deftest two-pins-same-num-test
   (is (= {:ex-msg "Assert failed: Pin number 00 has been mapped several times. Pin number 01 has been mapped several times"}
-         (catch-all (sut/connect pin-mapping4
+         (catch-all (sut/connect :pin-mapping pin-mapping4
                                  :debug true
                                  :output-filename "output/nok-test.md")))))
 
 (deftest incorrect-pin-mapping-test
   (is (= {:ex-msg "Assert failed: One of the pins' color is not a keyword"}
-         (catch-all (sut/connect pin-mapping5
+         (catch-all (sut/connect :pin-mapping pin-mapping5
                                  :debug true
                                  :output-filename "output/nok-test.md")))))
 
 (deftest no-output-file-test
   (with-logged-event-maps logs
-    (let [_board (sut/connect pin-mapping
+    (let [_board (sut/connect :pin-mapping pin-mapping
                               :debug true
                               :output-filename nil)]
       (is (= [{:msg "No output file for this board in debug mode." :level :warn}]
@@ -51,7 +51,7 @@
 
 
 (deftest export-signal-test
-  (let [board (sut/connect pin-mapping :debug true :output-name "export-signal")]
+  (let [board (sut/connect :pin-mapping pin-mapping :debug true :output-name "export-signal")]
     (core/pin-mode board PIN0 INPUT)
     (core/pin-mode board PIN1 PWM)
     (core/pin-mode board CLK OUTPUT)
