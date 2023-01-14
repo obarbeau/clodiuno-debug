@@ -3,33 +3,54 @@
    │ Arduino utility functions │
    ╰───────────────────────────╯"
   (:require [cheshire.core :refer [generate-stream]]
-            [clodiuno.core :as core :refer [LOW HIGH OUTPUT]]
-            [clodiuno.firmata]
-            [clodiuno-debug.firmata-debug :as debug]
             [clodiuno-debug.timbre-config]
             [clojure.java.io :as io]
-            [clojure.java.shell :as shell]
-            [taoensso.timbre :as log])
+            [clojure.java.shell :as shell])
   (:import (gnu.io CommPortIdentifier)))
 
 ;; Utility functions
 ;; -----------------
 
-(defn connect
-  "option :baudrate 9600 doesn't work.
-   What you'll get when using the 'debug' mode:
+(def
+  ^{:arglists '([map f? key val] [map f? key val & kvs])
+    :doc "assoc[iate] if (f? val) is true. When applied to a map, returns a new
+    map of the same (hashed/sorted) type, that contains the mapping of key(s) to
+    val(s) that are true for f?. When applied to a vector, returns a new vector
+    that contains val at index. Note - index must be <= (count vector).
+    From `iroh-core.core`"
+    :static true}
+  assoc-if
+  (fn ^:static assoc-if
+    ([map f? key val]
+     (if (f? val)
+       (assoc map key val)
+       map))
+    ([map f? key val & kvs]
+     (let [ret (if (f? val)
+                 (assoc map key val)
+                 map)]
+       (if kvs
+         (if (next kvs)
+           (recur ret f? (first kvs) (second kvs) (nnext kvs))
+           (throw (IllegalArgumentException.
+                   "assoc-if expects even number of arguments after map/vector, found odd number")))
+         ret)))))
 
-   ```clojure
-   TODO
-   ```"
-  [& {:as opts
-      :keys [port debug]
-      :or {debug false}}]
-  (if debug
-    (core/arduino :firmata-debug opts)
-    (do
-      (log/infof "Connecting to Arduino on port %s" port)
-      (core/arduino :firmata port))))
+(defn assoc-some?
+  "like assoc but for non-nil values. From `iroh-core.core`."
+  [m & args]
+  (apply assoc-if m some? args))
+
+(defn list-ports
+  "List available communication ports. Do not connect to them."
+  []
+  (let [ports (CommPortIdentifier/getPortIdentifiers)]
+    (if (.hasMoreElements ports)
+      (into []
+            (for [port (enumeration-seq ports)
+                  :let [name (.getName port)]]
+              name))
+      [])))
 
 (defn export-signal [board]
   (let [out_signal (format "%s/%s.json" (:output-dir @board) (:output-name @board))
@@ -50,35 +71,3 @@
                            "-c")
                  :out))))
 
-(defn close-board [board]
-  (core/close board))
-
-(defn list-ports
-  "List available communication ports. Do not connect to them."
-  []
-  (let [ports (CommPortIdentifier/getPortIdentifiers)]
-    (if (.hasMoreElements ports)
-      (into []
-            (for [port (enumeration-seq ports)
-                  :let [name (.getName port)]]
-              name))
-      [])))
-
-(defn integrated-led-blink [board]
-  (println "blinking led 13 -")
-  (core/pin-mode board 13 OUTPUT)
-  (core/digital-write board 13 HIGH)
-  (Thread/sleep 1000)
-  (core/digital-write board 13 LOW))
-
-(defn impulse
-  "Sends an impulse on the pin."
-  [board pin & {:keys [wait] :or {wait 100}}]
-  (let [{:keys [mode]} (debug/pin-info board pin)]
-    (core/pin-mode board pin OUTPUT)
-    (core/digital-write board pin HIGH)
-    ;; TODO write a sleep function that doesn't wait if the board is of type debug!
-    (Thread/sleep wait)
-    (core/digital-write board pin LOW)
-    ;; restore mode
-    (core/pin-mode board pin mode)))

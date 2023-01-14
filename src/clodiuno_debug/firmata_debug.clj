@@ -4,6 +4,7 @@
    ╰──────────────────────────────╯"
   (:require [clodiuno.core :as ccore
              :refer [LOW HIGH INPUT OUTPUT ANALOG PWM SERVO]]
+            [clodiuno-debug.utils :as utils]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [io.aviso.ansi :as ansi]
@@ -154,13 +155,15 @@
 ;; Firmata protocol implementation
 ;; -------------------------------
 
+;; if port is specified, add a connection to a real Arduino
 (defmethod ccore/arduino :firmata-debug
   [type
-   & {:keys [baudrate msg-callback port
+   & {:as opts
+      :keys [baudrate msg-callback port
              output-dir output-name pin-mapping]
       :or {baudrate 57600
-           output-dir "./output"
-           port "/dev/ttyACM0"}}]
+           output-dir "./output"}}]
+  ;; (log/info "opts=" opts)
   (let [same-name (->> pin-mapping
                        (map :name)
                        (frequencies)
@@ -180,32 +183,34 @@
                  (map #(format "Pin number %02d has been mapped several times" %))
                  (str/join ". "))))
   ;; (log/infof "Debug mode. Connecting to Arduino on port %s" port)
-  (ref {:interface type
-        :output-dir output-dir
-        :output-name output-name
-        :output-stream (if output-name
-                         (let [filename (format "%s/%s.md" output-dir output-name)
-                               _ (io/make-parents filename)
-                               bof (io/make-output-stream filename {})]
-                           (write-os bof "| pin | name | action | args |\n")
-                           (write-os bof "| --: | --: | --: | --: |\n")
-                           (reify
-                             IOutputStream
-                             (getOutputStream [_]
-                               bof)
-                             (close [_]
-                               (.close bof))))
-                         (log/warn "No output file for this board in debug mode."))
-        :pin-mapping (check-mapping pin-mapping)
-        :digital-out (into {}
-                           (for [i (range 0 arduino-port-count)]
-                             [i (repeat 8 0)]))
-        :pin-mode (into {}
-                        (for [i (range 0 arduino-port-count)]
-                          [i (repeat 8 nil)]))
-        :signal (init-signal pin-mapping)
-        ;; used to cycle colors in wavedrom
-        :write-colors (-> (range 2 10) (cycle))}))
+  (ref (utils/assoc-some?
+        {:interface type
+         :output-dir output-dir
+         :output-name output-name
+         :output-stream (if output-name
+                          (let [filename (format "%s/%s.md" output-dir output-name)
+                                _ (io/make-parents filename)
+                                bof (io/make-output-stream filename {})]
+                            (write-os bof "| pin | name | action | args |\n")
+                            (write-os bof "| --: | --: | --: | --: |\n")
+                            (reify
+                              IOutputStream
+                              (getOutputStream [_]
+                                bof)
+                              (close [_]
+                                (.close bof))))
+                          (log/warn "No output file for this board in debug mode."))
+         :pin-mapping (check-mapping pin-mapping)
+         :digital-out (into {}
+                            (for [i (range 0 arduino-port-count)]
+                              [i (repeat 8 0)]))
+         :pin-mode (into {}
+                         (for [i (range 0 arduino-port-count)]
+                           [i (repeat 8 nil)]))
+         :signal (init-signal pin-mapping)
+         ;; used to cycle colors in wavedrom
+         :write-colors (-> (range 2 10) (cycle))}
+        :wrapped-arduino (when port (ccore/arduino :firmata port)))))
 
 (defmethod ccore/close :firmata-debug [board]
   (when-let [os (:output-stream @board)]

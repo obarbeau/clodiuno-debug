@@ -2,14 +2,22 @@
 {:deps {cheshire/cheshire           {:mvn/version "5.11.0"}
         com.taoensso/timbre         {:mvn/version "5.2.1"}
         io.aviso/pretty             {:mvn/version "1.1.1"}
-        io.github.obarbeau/clodiuno {:git/sha "a9b0d7a82e8a6a2cbae8374cbddfe6bd0740ee3b"}
-        org.clojure/clojure         {:mvn/version "1.11.1"}}
+        io.github.obarbeau/clodiuno {#_#_:git/sha "a9b0d7a82e8a6a2cbae8374cbddfe6bd0740ee3b"
+                                     :local/root "../clodiuno"
+                                     :exclusions [rxtx22/rxtx22]}
+        org.clojure/clojure         {:mvn/version "1.11.1"}
+        org.rxtx/rxtx               {:mvn/version "2.2pre2"}}
  :paths ["src" "resources"]
+ ;;:mvn/repos {"for_org.rxtx/rxtx" {:url "https://mvnrepository.com" #_"https://repo.opennms.org/maven2"}}
  :aliases
  {:build {:deps {io.github.obarbeau/build-clj
                  {:git/sha "bb7d3f12381d84b9e230d8497d4d09b9fd6971ab"}}
           :exec-args {:lib io.github.obarbeau/clodiuno
                       :main-ns clodiuno.core
                       :version "0.0.4-SNAPSHOT"}}
+  :usb-port {:jvm-opts ["-Dgnu.io.rxtx.SerialPorts=/dev/ttyACM0"
+                        ;; gnu.io.CommPortIdentifier
+                        ;; requires /usr/lib/jni/librxtxSerial-<version>.so
+                        "-Djava.library.path=/usr/lib/jni"]}
   :test {:extra-paths ["test" "test-resources"]
          :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.0.75"}}}}}

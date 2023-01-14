@@ -54,9 +54,11 @@
   :middleware []
   :timestamp-opts {:pattern "yyMMdd HH:mm"}
   :appenders {:spit (merge (appenders/spit-appender {:fname log-file-name})
-                           {:output-fn color-output})
+                           {:output-fn color-output
+                            :min-level :debug})
               :println {:enabled? true
-                        :output-fn only-level-and-message}}})
+                        :output-fn only-level-and-message
+                        :min-level :info}}})
 
 (comment
   (log/info log/*config*))
