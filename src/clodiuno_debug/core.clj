@@ -9,6 +9,8 @@
             [clodiuno-debug.utils :as utils]
             [taoensso.timbre :as log]))
 
+(def default-arduino-port "/dev/ttyACM0")
+
 (defn connect
   "option :baudrate 9600 doesn't work.
    What you'll get when using the 'debug' mode:
@@ -18,18 +20,14 @@
    ```"
   [& {:as opts
       :keys [port debug]
-      :or {debug false
-           port "/dev/ttyACM0"}}]
+      :or {debug false}}]
   (let [port-index (.indexOf (utils/list-ports) port)
         port-exists? (pos? port-index)]
-    ;; (log/info "port" port)
-    ;; (log/info "(list-ports)" (utils/list-ports))
-    ;; (log/info "port-index" port-index)
-    ;; (log/info "port-exists?" port-exists?)
+    (when port
+      (assert port-exists? (format "The port %s is not available." port)))
     (if debug
-      (ccore/arduino :firmata-debug (if port-exists? opts (dissoc opts :port)))
+      (ccore/arduino :firmata-debug opts)
       (do
-        (assert port-exists? (format "The port %s is not available." port))
         (log/infof "Connecting to Arduino on port %s" port)
         (ccore/arduino :firmata port)))))
 

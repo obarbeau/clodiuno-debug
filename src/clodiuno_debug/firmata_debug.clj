@@ -10,6 +10,9 @@
             [io.aviso.ansi :as ansi]
             [taoensso.timbre :as log]))
 
+;; write-colors is an infinite seq
+(set! *print-length* 42)
+
 (def HIGH_ARROW 5)
 (def LOW_ARROW 6)
 (def PCLK 7)
@@ -158,12 +161,9 @@
 ;; if port is specified, add a connection to a real Arduino
 (defmethod ccore/arduino :firmata-debug
   [type
-   & {:as opts
-      :keys [baudrate msg-callback port
-             output-dir output-name pin-mapping]
-      :or {baudrate 57600
-           output-dir "./output"}}]
-  ;; (log/info "opts=" opts)
+   & {:keys [port output-dir output-name pin-mapping]
+      :or {output-dir "./output"}}]
+  ;;(log/debug ">> ccore/arduino opts=" opts)
   (let [same-name (->> pin-mapping
                        (map :name)
                        (frequencies)
@@ -182,7 +182,6 @@
                  (map first)
                  (map #(format "Pin number %02d has been mapped several times" %))
                  (str/join ". "))))
-  ;; (log/infof "Debug mode. Connecting to Arduino on port %s" port)
   (ref (utils/assoc-some?
         {:interface type
          :output-dir output-dir
@@ -210,7 +209,9 @@
          :signal (init-signal pin-mapping)
          ;; used to cycle colors in wavedrom
          :write-colors (-> (range 2 10) (cycle))}
-        :wrapped-arduino (when port (ccore/arduino :firmata port)))))
+        :wrapped-arduino (when port
+                           (log/infof "Debug mode wrapping a connection to Arduino on port %s" port)
+                           (ccore/arduino :firmata port)))))
 
 (defmethod ccore/close :firmata-debug [board]
   (when-let [os (:output-stream @board)]

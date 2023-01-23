@@ -55,10 +55,11 @@
   :timestamp-opts {:pattern "yyMMdd HH:mm"}
   :appenders {:spit (merge (appenders/spit-appender {:fname log-file-name})
                            {:output-fn color-output
-                            :min-level :debug})
+                            :min-level :debug
+                            :enabled? false})
               :println {:enabled? true
                         :output-fn only-level-and-message
                         :min-level :info}}})
 
 (comment
-  (log/info log/*config*))
+  (clojure.pprint/pprint log/*config*))

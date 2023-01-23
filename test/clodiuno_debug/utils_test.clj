@@ -46,7 +46,6 @@
   (with-logged-event-maps logs
     (let [_board (debug-core/connect :pin-mapping pin-mapping
                                      :debug true
-                                     :port "coucou"
                                      :output-filename nil)]
       (is (= [{:msg "No output file for this board in debug mode." :level :warn}]
              @logs)))))

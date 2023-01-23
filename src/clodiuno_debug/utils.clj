@@ -5,7 +5,7 @@
   (:require [cheshire.core :refer [generate-stream]]
             [clodiuno-debug.timbre-config]
             [clojure.java.io :as io]
-            [clojure.java.shell :as shell])
+            [org.httpkit.client :as http])
   (:import (gnu.io CommPortIdentifier)))
 
 ;; Utility functions
@@ -66,8 +66,11 @@
                              :tock 9}}
                      (clojure.java.io/writer out_signal)
                      {:pretty true})
-    (empty? (->> (format "/usr/local/bin/wavedrom-cli --input %s --png %s" out_signal out_png)
-                 (shell/sh "/bin/zsh"
-                           "-c")
-                 :out))))
+    (let [{:keys [body status]} @(http/post "http://localhost:8000/wavedrom"
+                                            {:as :stream
+                                             :headers {"Accept" "image/svg+xml"}
+                                             :body (clojure.java.io/input-stream out_signal)})]
+      (spit out_png body)
+      (= 200 status))))
+
 
