@@ -4,21 +4,22 @@
         http-kit/http-kit           {:mvn/version "2.6.0"}
         io.aviso/pretty             {:mvn/version "1.1.1"}
         io.github.obarbeau/clodiuno {#_#_:git/sha "a9b0d7a82e8a6a2cbae8374cbddfe6bd0740ee3b"
-                                     :local/root "../clodiuno"
-                                     :exclusions [rxtx22/rxtx22]}
+                                     :local/root "../clodiuno"}
         org.clojure/clojure         {:mvn/version "1.11.1"}
+        ;; installed by me
         org.rxtx/rxtx               {:mvn/version "2.2pre2"}}
  :paths ["src" "resources"]
- ;;:mvn/repos {"for_org.rxtx/rxtx" {:url "https://mvnrepository.com" #_"https://repo.opennms.org/maven2"}}
  :aliases
  {:build {:deps {io.github.obarbeau/build-clj
-                 {:git/sha "bb7d3f12381d84b9e230d8497d4d09b9fd6971ab"}}
-          :exec-args {:lib io.github.obarbeau/clodiuno
+                 {#_#_:git/sha "bb7d3f12381d84b9e230d8497d4d09b9fd6971ab"
+                  :local/root "../../tools/build-clj"}}
+          :exec-args {:lib io.github.obarbeau/clodiuno-debug
                       :main-ns clodiuno.core
                       :version "0.0.4-SNAPSHOT"}}
   :usb-port {:jvm-opts ["-Dgnu.io.rxtx.SerialPorts=/dev/ttyACM0"
                         ;; gnu.io.CommPortIdentifier
                         ;; requires /usr/lib/jni/librxtxSerial-<version>.so
                         "-Djava.library.path=/usr/lib/jni"]}
-  :test {:extra-paths ["test" "test-resources"]
-         :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.0.75"}}}}}
+  ;; run tests & coverage with Kaocha: clojure -M:usb-port:kaocha-cloverage:test/run (ou test/watch mais alors pas de coverage possible)
+  :kaocha-cloverage {:extra-paths ["test-resources"]
+                     :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}}}}}

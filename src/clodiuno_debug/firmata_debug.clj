@@ -2,13 +2,14 @@
   "╭──────────────────────────────╮
    │ Firmata protocol, debug mode │
    ╰──────────────────────────────╯"
-  (:require [clodiuno.core :as ccore
-             :refer [LOW HIGH INPUT OUTPUT ANALOG PWM SERVO]]
-            [clodiuno-debug.utils :as utils]
+  (:require [clodiuno-debug.utils :as utils]
+            [clodiuno.core :as ccore
+             :refer [ANALOG HIGH INPUT LOW OUTPUT PWM SERVO]]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [io.aviso.ansi :as ansi]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log])
+  (:import [java.io OutputStream]))
 
 ;; write-colors is an infinite seq
 (set! *print-length* 42)
@@ -47,7 +48,7 @@
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defprotocol IOutputStream
-  (getOutputStream [this]
+  (^OutputStream getOutputStream [this]
     "Returns a (buffered)output stream.")
   (close [this]
     "Closes the stream"))
@@ -59,9 +60,9 @@
   (dosync (alter r assoc-in ks v)))
 
 (defn- write-os [os msg]
-  (doseq [b (.getBytes msg)]
-    (.write os (int b)))
-  (.flush os))
+  (doseq [b (.getBytes ^String msg)]
+    (.write ^OutputStream os (int b)))
+  (.flush ^OutputStream os))
 
 (defn- write-bytes
   "Writes the message to the output-stream if it exists.
@@ -197,7 +198,7 @@
                               (getOutputStream [_]
                                 bof)
                               (close [_]
-                                (.close bof))))
+                                (.close ^OutputStream bof))))
                           (log/warn "No output file for this board in debug mode."))
          :pin-mapping (check-mapping pin-mapping)
          :digital-out (into {}
