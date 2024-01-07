@@ -69,7 +69,7 @@
    Returns the message."
   [board msg]
   (when-let [os (:output-stream @board)]
-    (write-os (.getOutputStream os) msg))
+    (write-os (.getOutputStream ^clodiuno_debug.firmata_debug.IOutputStream os) msg))
   msg)
 
 (defn- get-aviso-color [k type]
@@ -216,7 +216,7 @@
 
 (defmethod ccore/close :firmata-debug [board]
   (when-let [os (:output-stream @board)]
-    (.close os)))
+    (.close ^clodiuno_debug.firmata_debug.IOutputStream os)))
 
 (defmethod ccore/digital-read :firmata-debug
   [board pin]

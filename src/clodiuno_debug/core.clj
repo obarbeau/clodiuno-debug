@@ -21,7 +21,7 @@
   [& {:as opts
       :keys [port debug]
       :or {debug false}}]
-  (let [port-index (.indexOf (utils/list-ports) port)
+  (let [port-index (.indexOf ^clojure.lang.PersistentVector (utils/list-ports) port)
         port-exists? (pos? port-index)]
     (when port
       (assert port-exists? (format "The port %s is not available." port)))

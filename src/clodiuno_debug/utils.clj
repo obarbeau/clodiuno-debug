@@ -48,7 +48,7 @@
     (if (.hasMoreElements ports)
       (into []
             (for [port (enumeration-seq ports)
-                  :let [name (.getName port)]]
+                  :let [name (.getName ^CommPortIdentifier port)]]
               name))
       [])))
 
