@@ -3,4 +3,6 @@
   :kaocha.watch/ignore ["*.tmp"]
   :kaocha.plugin.randomize/randomize? true
   :kaocha/reporter [kaocha.report/dots]
-  :plugins [:kaocha.plugin/cloverage]}
+  :plugins [:kaocha.plugin/cloverage]
+  :cloverage/opts
+  {:lcov? true}}

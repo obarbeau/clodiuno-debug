@@ -1,7 +1,7 @@
 (ns clodiuno-debug.firmata-debug
-  "╭──────────────────────────────╮
-   │ Firmata protocol, debug mode │
-   ╰──────────────────────────────╯"
+  "╭─────────────────────────────────────────────╮
+   │ Firmata protocol implementation, debug mode │
+   ╰─────────────────────────────────────────────╯"
   (:require [clodiuno-debug.utils :as utils]
             [clodiuno.core :as ccore
              :refer [ANALOG HIGH INPUT LOW OUTPUT PWM SERVO]]
@@ -235,7 +235,7 @@
         beg (take (mod pin 8) digital-out-port)
         end (drop (inc (mod pin 8)) digital-out-port)
         state (concat beg [value] end)
-        current-value (nth digital-out-port (mod (inc pin) 8))
+        current-value (nth digital-out-port (mod (inc pin) 8)) ;; TODO
         value-str (get {HIGH "h" LOW "l"
                         HIGH_ARROW "H" LOW_ARROW "L"
                         PCLK "p" PCLK_ARROW "P"

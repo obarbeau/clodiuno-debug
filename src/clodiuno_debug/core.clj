@@ -13,6 +13,7 @@
 
 (defn connect
   "option :baudrate 9600 doesn't work.
+   port required only if a real arduino is wrapped.
    What you'll get when using the 'debug' mode:
 
    ```clojure
@@ -21,15 +22,15 @@
   [& {:as opts
       :keys [port debug]
       :or {debug false}}]
-  (let [port-index (.indexOf ^clojure.lang.PersistentVector (utils/list-ports) port)
-        port-exists? (pos? port-index)]
-    (when port
-      (assert port-exists? (format "The port %s is not available." port)))
-    (if debug
-      (ccore/arduino :firmata-debug opts)
-      (do
-        (log/infof "Connecting to Arduino on port %s" port)
-        (ccore/arduino :firmata port)))))
+  (when port
+    (let [port-index (.indexOf ^clojure.lang.PersistentVector (utils/list-ports) port)
+          port-exists? (pos? port-index)]
+      (assert port-exists? (format "The port %s is not available." port))))
+  (if debug
+    (ccore/arduino :firmata-debug opts)
+    (do
+      (log/infof "Connecting to Arduino on port %s" port)
+      (ccore/arduino :firmata port))))
 
 (defn close-board [board]
   (ccore/close board))
@@ -51,4 +52,4 @@
     (Thread/sleep wait)
     (ccore/digital-write board pin LOW)
     ;; restore mode
-    (ccore/pin-mode board pin mode)))
+    (ccore/pin-mode board pin mode))) "

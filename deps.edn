@@ -19,6 +19,7 @@
                         ;; requires /usr/lib/jni/librxtxSerial-<version>.so
                         "-Djava.library.path=/usr/lib/jni"
                         "-Dgnu.io.log.mode=PRINT_MODE"]}
-  ;; run tests & coverage with Kaocha: clojure -M:usb-port:kaocha-cloverage:test/run (ou test/watch mais alors pas de coverage possible)
+  ;; run tests & coverage with Kaocha:
+  ;; clojure -M:usb-port:kaocha-cloverage:test/run (or test/watch but then coverage is not possible)
   :kaocha-cloverage {:extra-paths ["test-resources"]
                      :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}}}}}

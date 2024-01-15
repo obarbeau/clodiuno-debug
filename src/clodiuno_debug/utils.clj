@@ -54,7 +54,7 @@
 
 (defn export-signal [board]
   (let [out_signal (format "%s/%s.json" (:output-dir @board) (:output-name @board))
-        out_png (format "%s/%s.png" (:output-dir @board) (:output-name @board))]
+        out_svg (format "%s/%s.svg" (:output-dir @board) (:output-name @board))]
     (generate-stream {:signal (->> (:signal @board)
                                    (map #(dissoc % :num)))
                       :config {:hscale 1
@@ -66,11 +66,12 @@
                              :tock 9}}
                      (clojure.java.io/writer out_signal)
                      {:pretty true})
+
+    (assert (= 200 (:status @(http/get "http://localhost:8000/"))) "Please start Kroki")
     (let [{:keys [body status]} @(http/post "http://localhost:8000/wavedrom"
-                                            {:as :stream
-                                             :headers {"Accept" "image/svg+xml"}
+                                            {:headers {"Accept" "image/svg+xml"}
                                              :body (clojure.java.io/input-stream out_signal)})]
-      (spit out_png body)
+      (spit out_svg body)
       (= 200 status))))
 
 

@@ -2,7 +2,8 @@
   "╭──────────────────────╮
    │ Timbre configuration │
    ╰──────────────────────╯"
-  (:require [clojure.string :as str]
+  (:require [clojure.pprint :as pprint]
+            [clojure.string :as str]
             [io.aviso.ansi :as ansi]
             [taoensso.encore :as enc]
             [taoensso.timbre :as log]
@@ -62,4 +63,4 @@
                         :min-level :info}}})
 
 (comment
-  (clojure.pprint/pprint log/*config*))
+  (pprint/pprint log/*config*))
