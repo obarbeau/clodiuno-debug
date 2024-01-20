@@ -11,4 +11,4 @@
                   {:num PIN1 :color :red    :name "PIN1"}
                   {:num CLK  :color :white  :name "CLK"}
                   {:num IO   :color :yellow :name "IO"}
-                  {:num CE   :color :orange :name "CE/_RST"}])
+                  {:num CE   :color :magenta :name "CE/_RST"}])

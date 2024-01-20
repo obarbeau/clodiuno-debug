@@ -20,6 +20,17 @@
                         "-Djava.library.path=/usr/lib/jni"
                         "-Dgnu.io.log.mode=PRINT_MODE"]}
   ;; run tests & coverage with Kaocha:
-  ;; clojure -M:usb-port:kaocha-cloverage:test/run (or test/watch but then coverage is not possible)
+  ;; cd $CLJ/electronics/clodiuno-debug ; podman_start_kroki
+  ;; clojure -M:usb-port:kaocha-cloverage:test/run
+  ;; watch (but then coverage is not possible)
+  ;; clojure -M:usb-port:kaocha-cloverage:test/watch
   :kaocha-cloverage {:extra-paths ["test-resources"]
-                     :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}}}}}
+                     :extra-deps {lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}}}
+
+  ;; clj -M:quickdoc
+  :quickdoc
+  {:deps {org.babashka/cli {:mvn/version "0.4.36"}
+          io.github.borkdude/quickdoc
+          {:deps/root "jvm"
+           :git/sha "7c8bef54eda28367193ec433af01bb940114f012"}}
+   :main-opts ["-m" "babashka.cli.exec" "quickdoc.api" "quickdoc"]}}}

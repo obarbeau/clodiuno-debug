@@ -1,6 +1,6 @@
 | pin | name | action | args |
 | --: | --: | --: | --: |
-| 40 | CE/_RST | position in mode | INPUT |
+| [45m[37m40[m[m | CE/_RST | position in mode | INPUT |
 | [43m[30m39[m[m | IO | position in mode | INPUT |
 | [47m[30m38[m[m | CLK | position in mode | INPUT |
 | [40m[37m00[m[m | PIN0 | position in mode | INPUT |

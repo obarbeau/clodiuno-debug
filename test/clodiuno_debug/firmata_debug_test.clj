@@ -66,7 +66,7 @@
               5 [nil nil nil nil nil nil nil nil]
               6 [nil nil nil nil nil nil nil nil]}
              (:pin-mode @board)))
-      (is (= "| 40 | CE/_RST | position in mode | SERVO |\n"
+      (is (= "| [45m[37m40[m[m | CE/_RST | position in mode | SERVO |\n"
              (ccore/pin-mode board CE SERVO)))
       (is (= {0 [INPUT PWM nil nil nil nil nil nil]
               1 [nil nil nil nil nil nil nil nil]
@@ -111,7 +111,8 @@
               {:data [], :name "CE/_RST", :num 40, :wave "x"}]
              (:signal @board)))
       (is (= "| [47m[30m38[m[m | CLK | digital-write | [42m HIGH [m |\n"
-             (ccore/digital-write board CLK HIGH)))
+             (ccore/digital-write board CLK HIGH))
+          "should write HIGH")
       (is (= {0 '(0 0 0 0 0 0 0 0)
               1 '(0 0 0 0 0 0 0 0)
               2 '(0 0 0 0 0 0 0 0)
@@ -119,13 +120,15 @@
               4 '(0 0 0 0 0 0 1 0)
               5 '(0 0 0 0 0 0 0 0)
               6 '(0 0 0 0 0 0 0 0)}
-             (:digital-out @board)))
+             (:digital-out @board))
+          "should update the board")
       (is (= [{:data [], :name "PIN0", :num 0, :wave "x."}
               {:data [], :name "PIN1", :num 1, :wave "x."}
               {:data [], :name "CLK", :num 38, :wave "xh"}
               {:data [], :name "IO", :num 39, :wave "x."}
               {:data [], :name "CE/_RST", :num 40, :wave "x."}]
-             (:signal @board)))
+             (:signal @board))
+          "should update the signal")
       (is (= "| [47m[30m38[m[m | CLK | digital-write | [40m LOW [m |\n"
              (ccore/digital-write board CLK LOW)))
       (is (= {0 '(0 0 0 0 0 0 0 0)
@@ -233,7 +236,7 @@
                (catch-all (ccore/enable-pin board :analog CLK))))
         (is (= "| [43m[30m39[m[m | IO | enable | with code 231 1 |\n"
                (ccore/enable-pin board :analog IO)))
-        (is (= "| 40 | CE/_RST | enable | with code 232 1 |\n"
+        (is (= "| [45m[37m40[m[m | CE/_RST | enable | with code 232 1 |\n"
                (ccore/enable-pin board :analog CE))))
       (testing "digital"
         (is (= "| [40m[37m00[m[m | PIN0 | enable | with code 208 1 |\n"
@@ -263,7 +266,7 @@
                (catch-all (ccore/disable-pin board :analog CLK))))
         (is (= "| [43m[30m39[m[m | IO | disable | with code 231 0 |\n"
                (ccore/disable-pin board :analog IO)))
-        (is (= "| 40 | CE/_RST | disable | with code 232 0 |\n"
+        (is (= "| [45m[37m40[m[m | CE/_RST | disable | with code 232 0 |\n"
                (ccore/disable-pin board :analog CE))))
       (testing "digital"
         (is (= "| [40m[37m00[m[m | PIN0 | disable | with code 208 0 |\n"
@@ -309,7 +312,7 @@
               1 {:num 1 :color :red :name "PIN1"}
               38 {:num 38 :color :white :name "CLK"}
               39 {:num 39 :color :yellow :name "IO"}
-              40 {:num 40 :color :orange :name "CE/_RST"}}
+              40 {:num 40 :color :magenta :name "CE/_RST"}}
              (sut/pins pin-mapping))))
 
     (testing "pin-info"
@@ -325,6 +328,72 @@
       (is (= {:num 39 :color :yellow :name "IO" :port 4 :mode ANALOG
               :pin-modes-on-port [nil nil nil nil nil nil OUTPUT ANALOG]}
              (sut/pin-info board IO)))
-      (is (= {:num 40 :color :orange :name "CE/_RST" :port 5 :mode SERVO
+      (is (= {:num 40 :color :magenta :name "CE/_RST" :port 5 :mode SERVO
               :pin-modes-on-port [SERVO nil nil nil nil nil nil nil]}
              (sut/pin-info board CE))))))
+
+(deftest digital-write-test
+  (let [board (debug-core/connect :pin-mapping pin-mapping :debug true)]
+    (is (= :firmata-debug
+           (:interface @board)))
+
+    (ccore/pin-mode board CLK OUTPUT)
+    (ccore/pin-mode board PIN1 OUTPUT)
+
+    (is (= "| [47m[30m38[m[m | CLK | digital-write | [42m HIGH [m |\n"
+           (ccore/digital-write board CLK HIGH)))
+    (is (= "| [41m[37m01[m[m | PIN1 | digital-write | [40m LOW [m |\n"
+           (ccore/digital-write board PIN1 sut/LOW_ARROW)))
+    (is (= [{:data [], :name "PIN0", :num 0, :wave "x.."}
+            {:data [], :name "PIN1", :num 1, :wave "x.L"}
+            {:data [], :name "CLK", :num 38, :wave "xh."}
+            {:data [], :name "IO", :num 39, :wave "x.."}
+            {:data [], :name "CE/_RST", :num 40, :wave "x.."}]
+           (:signal @board)))
+    (is (= {0 '(0 6 0 0 0 0 0 0)
+            1 '(0 0 0 0 0 0 0 0)
+            2 '(0 0 0 0 0 0 0 0)
+            3 '(0 0 0 0 0 0 0 0)
+            4 '(0 0 0 0 0 0 1 0)
+            5 '(0 0 0 0 0 0 0 0)
+            6 '(0 0 0 0 0 0 0 0)}
+           (:digital-out @board))
+        "should update the board")
+    (is (= {:ex-msg "Assert failed: Pin 38 (CLK) has already value h."}
+           (catch-all (ccore/digital-write board CLK HIGH))))
+    (is (= "| [41m[37m01[m[m | PIN1 | digital-write | [40m LOW [m |\n"
+           (catch-all (ccore/digital-write board PIN1 sut/LOW_ARROW))))))
+
+(sut/display-all-ansi-colors)
+
+(def pin-mapping3
+  (conj pin-mapping
+        {:num 2 :color :green :name "PIN0"}
+        {:num 3 :color :green :name "PIN1"}))
+
+(def pin-mapping4
+  (conj pin-mapping
+        {:num 0 :color :green :name "PIN--0"}
+        {:num 1 :color :green :name "PIN--1"}))
+
+(def pin-mapping5
+  [{:num 0 :color "green" :name "PIN--0"}
+   {:num 1 :color :magenta :name "PIN--1"}])
+
+(deftest two-pins-same-name-test
+  (is (= {:ex-msg "Assert failed: The pin PIN0 has been mapped several times. The pin PIN1 has been mapped several times"}
+         (catch-all (debug-core/connect :pin-mapping pin-mapping3
+                                        :debug true
+                                        :output-filename "output/nok-test.md")))))
+
+(deftest two-pins-same-num-test
+  (is (= {:ex-msg "Assert failed: Pin number 00 has been mapped several times. Pin number 01 has been mapped several times"}
+         (catch-all (debug-core/connect :pin-mapping pin-mapping4
+                                        :debug true
+                                        :output-filename "output/nok-test.md")))))
+
+(deftest incorrect-pin-mapping-test
+  (is (= {:ex-msg "Assert failed: One of the pins' color is not an allowed keyword"}
+         (catch-all (debug-core/connect :pin-mapping pin-mapping5
+                                        :debug true
+                                        :output-filename "output/nok-test.md")))))

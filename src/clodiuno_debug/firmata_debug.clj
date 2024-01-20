@@ -36,13 +36,12 @@
    :cyan :black
    :magenta :white})
 
-;; TODO test this
 (defn display-all-ansi-colors []
   (->> available-colors
        (keys)
-       (map str)
-       (map #(format "(str ansi/%s-font \"normal %s\" ansi/bold-%s-font \"  bold %s\" ansi/reset-font)" % % % %))
-       (map #(eval (read-string %)))
+       (map (comp #(eval (read-string %))
+                  #(format "(str io.aviso.ansi/%s-font \"normal %s\" io.aviso.ansi/bold-%s-font \" ; bold %s\" io.aviso.ansi/reset-font)" % % % %)
+                  #(subs (str %) 1)))
        (clojure.string/join "\n")
        (println)))
 
@@ -88,13 +87,13 @@
    ((get-color (get available-colors color :no-color)) (format "%02d" num))))
 
 (defn- check-mapping
-  "Pin color is not mandatory but if present, must be a keyword
-   TODO: check only allowed keywords"
+  "Pin color is not mandatory but if present, must be an allowed keyword.
+   See [[available-colors]]."
   [pin-mapping]
   (assert (->> pin-mapping
                (map :color)
-               (every? #(or (keyword? %) (nil? %))))
-          "One of the pins' color is not a keyword")
+               (every? #(or (nil? %) (contains? available-colors %))))
+          "One of the pins' color is not an allowed keyword")
   pin-mapping)
 
 (defn- pin-action [board {:keys [num name color] :as _pin-info} action & args]
@@ -235,13 +234,18 @@
         beg (take (mod pin 8) digital-out-port)
         end (drop (inc (mod pin 8)) digital-out-port)
         state (concat beg [value] end)
-        current-value (nth digital-out-port (mod (inc pin) 8)) ;; TODO
+        current-value (nth digital-out-port (mod pin 8))
         value-str (get {HIGH "h" LOW "l"
                         HIGH_ARROW "H" LOW_ARROW "L"
                         PCLK "p" PCLK_ARROW "P"
                         NCLK "n" NCLK_ARROW "N"} value)]
     (assert (= OUTPUT mode)
             (format "Pin %d (%s) is not in OUTPUT mode." pin name))
+    ;; not really useful: LOW is set by default for pin-mode OUTPUT,
+    ;; and we cannot forbid other values to be set again
+    (assert (not (and (= HIGH value)
+                      (= current-value value)))
+            (format "Pin %d (%s) has already value %s." pin name value-str))
     (assoc-in! board [:digital-out port] state)
     (update-wave board #(if (= % pin)
                           value-str
