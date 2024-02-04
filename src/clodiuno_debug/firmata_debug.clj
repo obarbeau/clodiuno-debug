@@ -267,7 +267,8 @@
                    OUTPUT 'OUTPUT
                    ANALOG 'ANALOG
                    PWM 'PWM
-                   SERVO 'SERVO)
+                   SERVO 'SERVO
+                   (throw (ex-info (format "Unknown pin mode: %s" new-mode) {})))
         port (int (/ pin 8))
         beg (take (mod pin 8) pin-modes-on-port)
         end (drop (inc (mod pin 8)) pin-modes-on-port)

@@ -19,7 +19,9 @@
 
 ;; tests
 (deftest all-test
-  (let [board (debug-core/connect :pin-mapping pin-mapping :debug true :output-name output-name)]
+  (let [board (debug-core/connect :pin-mapping pin-mapping
+                                  :debug true
+                                  :output-name output-name)]
     (is (= :firmata-debug
            (:interface @board)))
 
@@ -297,7 +299,9 @@
            (slurp "output/color-test.md")))))
 
 (deftest pin-and-pin-info-test
-  (let [board (debug-core/connect :pin-mapping pin-mapping :debug true)]
+  (let [board (debug-core/connect :pin-mapping pin-mapping
+                                  :debug true
+                                  :output-name "pin-and-pin-info-test")]
     (is (= :firmata-debug
            (:interface @board)))
 
@@ -333,7 +337,9 @@
              (sut/pin-info board CE))))))
 
 (deftest digital-write-test
-  (let [board (debug-core/connect :pin-mapping pin-mapping :debug true)]
+  (let [board (debug-core/connect :pin-mapping pin-mapping
+                                  :debug true
+                                  :output-name "digital-write-test")]
     (is (= :firmata-debug
            (:interface @board)))
 
@@ -364,8 +370,6 @@
     (is (= "| [41m[37m01[m[m | PIN1 | digital-write | [40m LOW [m |\n"
            (catch-all (ccore/digital-write board PIN1 sut/LOW_ARROW))))))
 
-(sut/display-all-ansi-colors)
-
 (def pin-mapping3
   (conj pin-mapping
         {:num 2 :color :green :name "PIN0"}
@@ -384,16 +388,18 @@
   (is (= {:ex-msg "Assert failed: The pin PIN0 has been mapped several times. The pin PIN1 has been mapped several times"}
          (catch-all (debug-core/connect :pin-mapping pin-mapping3
                                         :debug true
-                                        :output-filename "output/nok-test.md")))))
+                                        :output-filename "nok-test.md")))))
 
 (deftest two-pins-same-num-test
   (is (= {:ex-msg "Assert failed: Pin number 00 has been mapped several times. Pin number 01 has been mapped several times"}
          (catch-all (debug-core/connect :pin-mapping pin-mapping4
                                         :debug true
-                                        :output-filename "output/nok-test.md")))))
+                                        :output-filename "nok-test.md")))))
 
 (deftest incorrect-pin-mapping-test
   (is (= {:ex-msg "Assert failed: One of the pins' color is not an allowed keyword"}
          (catch-all (debug-core/connect :pin-mapping pin-mapping5
                                         :debug true
-                                        :output-filename "output/nok-test.md")))))
+                                        :output-filename "nok-test.md")))))
+
+(sut/display-all-ansi-colors)

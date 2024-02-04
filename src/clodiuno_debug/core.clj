@@ -83,8 +83,9 @@
   (let [{:keys [mode]} (debug/pin-info board pin)]
     (ccore/pin-mode board pin OUTPUT)
     (ccore/digital-write board pin HIGH)
-    ;; TODO write a sleep function that doesn't wait if the board is of type debug!
-    (Thread/sleep wait)
+    (when-not (= :firmata-debug (:interface @board))
+      (Thread/sleep wait))
     (ccore/digital-write board pin LOW)
-    ;; restore mode
-    (ccore/pin-mode board pin mode)))
+    ;; restore mode, if any
+    (when mode
+      (ccore/pin-mode board pin mode))))

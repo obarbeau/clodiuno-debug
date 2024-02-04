@@ -19,7 +19,9 @@
              @logs)))))
 
 (deftest export-signal-test
-  (let [board (debug-core/connect :pin-mapping pin-mapping :debug true :output-name "export-signal")]
+  (let [board (debug-core/connect :pin-mapping pin-mapping
+                                  :debug true
+                                  :output-name "export-signal")]
     (ccore/pin-mode board PIN0 INPUT)
     (ccore/pin-mode board PIN1 PWM)
     (ccore/pin-mode board CLK OUTPUT)
